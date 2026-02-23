@@ -45,8 +45,8 @@ CREATE TABLE stores (
 
 CREATE TABLE store_items (
     id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    item_id INT NOT NULL,
     store_id INT NOT NULL,
+    item_id INT NOT NULL,
     purchase_unit_id INT,
     inventory_unit_id INT,
     inventory_units_per_purchase NUMERIC(10, 4) NOT NULL DEFAULT 1.0,
