@@ -23,7 +23,7 @@ CREATE TABLE item_category_mappings (
     item_id INT NOT NULL,
     category_id INT NOT NULL,
     CONSTRAINT item_category_mappings_fk_item FOREIGN KEY (item_id) REFERENCES items(id) ON DELETE CASCADE,
-    CONSTRAINT item_category_mappings_fk_category FOREIGN KEY (category_id) REFERENCES item_categories(id) ON DELETE RESTRICT,
+    CONSTRAINT item_category_mappings_fk_category FOREIGN KEY (category_id) REFERENCES item_categories(id) ON DELETE RESTRICT, -- item category must have zero associated items to be deleted
     PRIMARY KEY (item_id, category_id)
 );
 
@@ -33,8 +33,8 @@ CREATE TABLE inventory_items (
     item_id INT NOT NULL UNIQUE,
     unit_id INT,
     stored_amount NUMERIC(10, 4),
-    CONSTRAINT inventory_items_fk_item FOREIGN KEY (item_id) REFERENCES items(id) ON DELETE RESTRICT,
-    CONSTRAINT inventory_items_fk_unit FOREIGN KEY (unit_id) REFERENCES units(id) ON DELETE RESTRICT,
+    CONSTRAINT inventory_items_fk_item FOREIGN KEY (item_id) REFERENCES items(id) ON DELETE RESTRICT, -- item must have zero associated inventory records to be deleted
+    CONSTRAINT inventory_items_fk_unit FOREIGN KEY (unit_id) REFERENCES units(id) ON DELETE RESTRICT, -- unit must have zero associated inventory records to be deleted
     CONSTRAINT inventory_items_stored_amount_check CHECK (stored_amount >= 0)
 );
 
@@ -51,11 +51,12 @@ CREATE TABLE store_items (
     inventory_unit_id INT,
     inventory_units_per_purchase NUMERIC(10, 4) NOT NULL DEFAULT 1.0,
     purchased_by_decimal BOOLEAN NOT NULL DEFAULT FALSE,
+    is_favorite BOOLEAN NOT NULL DEFAULT FALSE,
     store_traversal_order INT NOT NULL,
-    CONSTRAINT store_items_fk_item FOREIGN KEY (item_id) REFERENCES items(id) ON DELETE RESTRICT,
+    CONSTRAINT store_items_fk_item FOREIGN KEY (item_id) REFERENCES items(id) ON DELETE RESTRICT, -- item must have zero associated store items to be deleted
     CONSTRAINT store_items_fk_store FOREIGN KEY (store_id) REFERENCES stores(id) ON DELETE CASCADE,
-    CONSTRAINT store_items_fk_purchase_unit FOREIGN KEY (purchase_unit_id) REFERENCES units(id) ON DELETE RESTRICT,
-    CONSTRAINT store_items_fk_inventory_unit FOREIGN KEY (inventory_unit_id) REFERENCES units(id) ON DELETE RESTRICT,
+    CONSTRAINT store_items_fk_purchase_unit FOREIGN KEY (purchase_unit_id) REFERENCES units(id) ON DELETE RESTRICT, -- unit must have zero associated store items to be deleted
+    CONSTRAINT store_items_fk_inventory_unit FOREIGN KEY (inventory_unit_id) REFERENCES units(id) ON DELETE RESTRICT, -- unit must have zero associated store items to be deleted
     CONSTRAINT store_items_inventory_units_per_purchase_check CHECK (inventory_units_per_purchase > 0),
     CONSTRAINT store_items_purchased_by_decimal_check CHECK (purchased_by_decimal = false OR inventory_units_per_purchase = 1)
 );
@@ -65,7 +66,7 @@ CREATE TABLE meals (
     name TEXT NOT NULL,
     meal_category_id INT NOT NULL,
     servings INT NOT NULL,
-    CONSTRAINT meals_fk_meal_category FOREIGN KEY (meal_category_id) REFERENCES meal_categories(id) ON DELETE RESTRICT,
+    CONSTRAINT meals_fk_meal_category FOREIGN KEY (meal_category_id) REFERENCES meal_categories(id) ON DELETE RESTRICT, -- meal category must have zero associated meals to be deleted
     CONSTRAINT meals_servings_check CHECK (servings > 0)
 );
 
@@ -76,11 +77,12 @@ CREATE TABLE meal_ingredients (
     unit_id INT,
     required_amount NUMERIC(10, 4),
     is_seasoning BOOLEAN NOT NULL DEFAULT FALSE,
+    depletes_slowly BOOLEAN NOT NULL DEFAULT FALSE,
     alternate_ingredient_id INT,
     CONSTRAINT meal_ingredients_fk_meal FOREIGN KEY (meal_id) REFERENCES meals(id) ON DELETE CASCADE,
-    CONSTRAINT meal_ingredients_fk_ingredient FOREIGN KEY (ingredient_id) REFERENCES items(id) ON DELETE RESTRICT,
-    CONSTRAINT meal_ingredients_fk_unit FOREIGN KEY (unit_id) REFERENCES units(id) ON DELETE RESTRICT,
-    CONSTRAINT meal_ingredients_fk_alternate_ingredient FOREIGN KEY (alternate_ingredient_id) REFERENCES items(id) ON DELETE RESTRICT,
+    CONSTRAINT meal_ingredients_fk_ingredient FOREIGN KEY (ingredient_id) REFERENCES items(id) ON DELETE RESTRICT, -- item must have zero associated meal ingredients to be deleted
+    CONSTRAINT meal_ingredients_fk_unit FOREIGN KEY (unit_id) REFERENCES units(id) ON DELETE RESTRICT, -- unit must have zero associated meal ingredients to be deleted
+    CONSTRAINT meal_ingredients_fk_alternate_ingredient FOREIGN KEY (alternate_ingredient_id) REFERENCES items(id) ON DELETE RESTRICT, -- item must have zero associated meal ingredients to be deleted
     CONSTRAINT meal_ingredients_required_amount_check CHECK (required_amount > 0)
 );
 
@@ -100,7 +102,7 @@ CREATE TABLE shopping_list_items (
     custom_item_name TEXT,
     shopping_list_order INT NOT NULL,
     CONSTRAINT shopping_list_items_fk_shopping_list FOREIGN KEY (shopping_list_id) REFERENCES shopping_lists(id) ON DELETE CASCADE,
-    CONSTRAINT shopping_list_items_fk_store_item FOREIGN KEY (store_item_id) REFERENCES store_items(id) ON DELETE RESTRICT,
+    CONSTRAINT shopping_list_items_fk_store_item FOREIGN KEY (store_item_id) REFERENCES store_items(id) ON DELETE RESTRICT, -- store item must have zero associated shopping list items to be deleted
     CONSTRAINT shopping_list_items_item_source_check CHECK (
         (store_item_id IS NOT NULL AND custom_item_name IS NULL) OR 
         (store_item_id IS NULL AND custom_item_name IS NOT NULL)
@@ -108,6 +110,7 @@ CREATE TABLE shopping_list_items (
     CONSTRAINT shopping_list_items_purchase_quantity_check CHECK (purchase_quantity > 0)
 );
 
+-- do I need all these indexes?
 CREATE INDEX idx_item_category_mappings_category_id ON item_category_mappings(category_id);
 CREATE INDEX idx_inventory_items_unit_id ON inventory_items(unit_id);
 CREATE INDEX idx_store_items_item_id ON store_items(item_id);

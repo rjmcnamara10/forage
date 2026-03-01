@@ -45,8 +45,9 @@ type MealIngredient struct {
 	MealID                int      `json:"meal_id" db:"meal_id"`
 	IngredientID          int      `json:"ingredient_id" db:"ingredient_id"`
 	UnitID                *int     `json:"unit_id" db:"unit_id"`
-	RequiredAmount        *float64 `json:"required_amount" db:"required_amount"`                 // Quantity of the ingredient used in the meal or called for in the recipe
+	RequiredAmount        *float64 `json:"required_amount" db:"required_amount"`                 // Quantity of the ingredient used in the meal or called for in the recipe. When null, the ingredient is to taste, a topping, on the side, or otherwise doesn't require precise quantity tracking
 	IsSeasoning           bool     `json:"is_seasoning" db:"is_seasoning"`                       // True if the ingredient can be logically grouped as a seasoning
+	DepletesSlowly        bool     `json:"depletes_slowly" db:"depletes_slowly"`                 // True if the ingredient is typically used in small amounts and depletes slowly (e.g., spices, condiments)
 	AlternateIngredientID *int     `json:"alternate_ingredient_id" db:"alternate_ingredient_id"` // Optional, used when an ingredient can be substituted with another
 }
 
@@ -64,6 +65,7 @@ type StoreItem struct {
 	InventoryUnitID           *int    `json:"inventory_unit_id" db:"inventory_unit_id"`                       // Unit used for inventory tracking
 	InventoryUnitsPerPurchase float64 `json:"inventory_units_per_purchase" db:"inventory_units_per_purchase"` // Number of inventory units per purchase unit
 	PurchasedByDecimal        bool    `json:"purchased_by_decimal" db:"purchased_by_decimal"`                 // True if item can be purchased in fractional amounts (e.g., weight)
+	IsFavorite                bool    `json:"is_favorite" db:"is_favorite"`                                   // True if item is favorited by the user
 	StoreTraversalOrder       int     `json:"store_traversal_order" db:"store_traversal_order"`               // Order that items are encountered while traversing store
 }
 
