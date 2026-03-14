@@ -80,7 +80,7 @@ Forage is a grocery list generation app designed to streamline meal planning and
 
 ```
 forage/
-├── backend/          # Go backend server
+├── backend/      # Go backend server
 │   ├── db/           # Database connection, schema, and querying
 │   ├── handlers/     # API route handlers
 │   └── main.go       # Entry point
