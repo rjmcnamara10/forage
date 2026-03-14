@@ -57,8 +57,22 @@ Forage is a grocery list generation app designed to streamline meal planning and
    go mod download
    ```
 
-5. **Run the server**
+5. **Install sqlc (for database query code generation)**
    ```sh
+   brew install sqlc  # macOS
+   # Or for other platforms, see https://docs.sqlc.dev/en/latest/overview/install.html
+   ```
+
+6. **Generate type-safe database code**
+   ```sh
+   cd backend
+   sqlc generate
+   ```
+   This generates Go code from the SQL queries in `backend/db/queries/`.
+
+7. **Run the server**
+   ```sh
+   # from backend/
    go run main.go
    ```
 
@@ -66,12 +80,11 @@ Forage is a grocery list generation app designed to streamline meal planning and
 
 ```
 forage/
-├── backend/          # Go backend server
-│   ├── db/           # Database connection and schema
-│   ├── models/       # Data models
+├── backend/      # Go backend server
+│   ├── db/           # Database connection, schema, and querying
 │   ├── handlers/     # API route handlers
 │   └── main.go       # Entry point
-└── frontend/         # Frontend application (TBD)
+└── frontend/     # Frontend application (TBD)
 ```
 
 ## API Documentation
@@ -89,8 +102,25 @@ The database schema is defined in `backend/db/schema.sql` and includes tables fo
 - Stores and store items
 - Shopping lists
 
-#### Item Quantity Representation Patterns
-Items are represented differently based on their quantity/unit combination:
-- Measured: has quantity + unit ("6 slices of bread", "1.25 lbs of deli turkey")
-- Counted: has quantity, no unit ("3 chicken breasts", "4 bananas")  
-- Presence-based: no quantity or unit ("BBQ sauce", "Garlic powder")
+## Development
+
+### Regenerating Database Code
+
+After modifying SQL queries in `backend/db/queries/`, regenerate the type-safe Go code:
+
+```sh
+cd backend
+sqlc generate
+```
+
+The generated code appears in `backend/db/sqlc/` and should NOT be edited manually.
+
+### Adding New Queries
+
+1. Add or modify `.sql` files in `backend/db/queries/` (organized by domain)
+2. Use sqlc comment syntax:
+   - `-- name: FunctionName :one` — Returns a single row
+   - `-- name: FunctionName :many` — Returns multiple rows
+   - `-- name: FunctionName :exec` — Executes without returning data
+3. Run `sqlc generate` to create Go code
+4. Add repository methods in `backend/db/repository/` to wrap generated functions

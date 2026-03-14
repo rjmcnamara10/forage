@@ -22,6 +22,8 @@ dist/
 
 # Go
 vendor/
+backend/forage
+backend/*.exe
 
 # OS
 Thumbs.db
