@@ -246,10 +246,10 @@ func (q *Queries) ListMealIngredientsForMultipleMeals(ctx context.Context, dolla
 	return items, nil
 }
 
-const updateMealIngredient = `-- name: UpdateMealIngredient :exec
+const updateMealIngredient = `-- name: UpdateMealIngredient :one
 UPDATE meal_ingredients 
 SET ingredient_id = $1, unit_id = $2, required_amount = $3, is_seasoning = $4, depletes_slowly = $5, alternate_ingredient_id = $6 
-WHERE id = $7
+WHERE id = $7 RETURNING id, meal_id, ingredient_id, unit_id, required_amount, is_seasoning, depletes_slowly, alternate_ingredient_id
 `
 
 type UpdateMealIngredientParams struct {
@@ -262,8 +262,8 @@ type UpdateMealIngredientParams struct {
 	ID                    int32          `json:"id"`
 }
 
-func (q *Queries) UpdateMealIngredient(ctx context.Context, arg UpdateMealIngredientParams) error {
-	_, err := q.db.ExecContext(ctx, updateMealIngredient,
+func (q *Queries) UpdateMealIngredient(ctx context.Context, arg UpdateMealIngredientParams) (MealIngredient, error) {
+	row := q.db.QueryRowContext(ctx, updateMealIngredient,
 		arg.IngredientID,
 		arg.UnitID,
 		arg.RequiredAmount,
@@ -272,5 +272,16 @@ func (q *Queries) UpdateMealIngredient(ctx context.Context, arg UpdateMealIngred
 		arg.AlternateIngredientID,
 		arg.ID,
 	)
-	return err
+	var i MealIngredient
+	err := row.Scan(
+		&i.ID,
+		&i.MealID,
+		&i.IngredientID,
+		&i.UnitID,
+		&i.RequiredAmount,
+		&i.IsSeasoning,
+		&i.DepletesSlowly,
+		&i.AlternateIngredientID,
+	)
+	return i, err
 }

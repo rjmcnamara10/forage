@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+
 	"github.com/rjmcnamara10/forage/db/sqlc"
 )
 
@@ -30,7 +31,7 @@ func (r *ItemCategoryRepository) CreateItemCategory(ctx context.Context, name st
 	return r.queries.CreateItemCategory(ctx, name)
 }
 
-func (r *ItemCategoryRepository) UpdateItemCategory(ctx context.Context, id int32, name string) error {
+func (r *ItemCategoryRepository) UpdateItemCategory(ctx context.Context, id int32, name string) (sqlc.ItemCategory, error) {
 	return r.queries.UpdateItemCategory(ctx, sqlc.UpdateItemCategoryParams{ID: id, Name: name})
 }
 
@@ -63,7 +64,7 @@ func (r *MealCategoryRepository) CreateMealCategory(ctx context.Context, name st
 	return r.queries.CreateMealCategory(ctx, name)
 }
 
-func (r *MealCategoryRepository) UpdateMealCategory(ctx context.Context, id int32, name string) error {
+func (r *MealCategoryRepository) UpdateMealCategory(ctx context.Context, id int32, name string) (sqlc.MealCategory, error) {
 	return r.queries.UpdateMealCategory(ctx, sqlc.UpdateMealCategoryParams{ID: id, Name: name})
 }
 

@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+
 	"github.com/rjmcnamara10/forage/db/sqlc"
 )
 
@@ -35,7 +36,7 @@ func (r *ItemRepository) CreateItem(ctx context.Context, name string) (sqlc.Item
 	return r.queries.CreateItem(ctx, name)
 }
 
-func (r *ItemRepository) UpdateItem(ctx context.Context, id int32, name string) error {
+func (r *ItemRepository) UpdateItem(ctx context.Context, id int32, name string) (sqlc.Item, error) {
 	return r.queries.UpdateItem(ctx, sqlc.UpdateItemParams{ID: id, Name: name})
 }
 
@@ -104,11 +105,11 @@ func (r *InventoryRepository) CreateInventoryItem(ctx context.Context, itemID in
 	return r.queries.CreateInventoryItem(ctx, sqlc.CreateInventoryItemParams{ItemID: itemID, UnitID: unitID, StoredAmount: storedAmount})
 }
 
-func (r *InventoryRepository) UpdateInventoryItem(ctx context.Context, itemID int32, unitID sql.NullInt32, storedAmount sql.NullString) error {
+func (r *InventoryRepository) UpdateInventoryItem(ctx context.Context, itemID int32, unitID sql.NullInt32, storedAmount sql.NullString) (sqlc.InventoryItem, error) {
 	return r.queries.UpdateInventoryItem(ctx, sqlc.UpdateInventoryItemParams{UnitID: unitID, StoredAmount: storedAmount, ItemID: itemID})
 }
 
-func (r *InventoryRepository) UpdateInventoryStoredAmount(ctx context.Context, itemID int32, storedAmount sql.NullString) error {
+func (r *InventoryRepository) UpdateInventoryStoredAmount(ctx context.Context, itemID int32, storedAmount sql.NullString) (sqlc.InventoryItem, error) {
 	return r.queries.UpdateInventoryStoredAmount(ctx, sqlc.UpdateInventoryStoredAmountParams{StoredAmount: storedAmount, ItemID: itemID})
 }
 

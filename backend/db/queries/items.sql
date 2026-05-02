@@ -13,8 +13,8 @@ SELECT COUNT(*) as count FROM items;
 -- name: CreateItem :one
 INSERT INTO items (name) VALUES ($1) RETURNING id, name;
 
--- name: UpdateItem :exec
-UPDATE items SET name = $1 WHERE id = $2;
+-- name: UpdateItem :one
+UPDATE items SET name = $1 WHERE id = $2 RETURNING id, name;
 
 -- name: DeleteItem :exec
 DELETE FROM items WHERE id = $1;

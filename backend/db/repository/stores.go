@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+
 	"github.com/rjmcnamara10/forage/db/sqlc"
 )
 
@@ -30,7 +31,7 @@ func (r *StoreRepository) CreateStore(ctx context.Context, name string) (sqlc.St
 	return r.queries.CreateStore(ctx, name)
 }
 
-func (r *StoreRepository) UpdateStore(ctx context.Context, id int32, name string) error {
+func (r *StoreRepository) UpdateStore(ctx context.Context, id int32, name string) (sqlc.Store, error) {
 	return r.queries.UpdateStore(ctx, sqlc.UpdateStoreParams{ID: id, Name: name})
 }
 
@@ -63,7 +64,7 @@ func (r *StoreItemRepository) CreateStoreItem(ctx context.Context, params sqlc.C
 	return r.queries.CreateStoreItem(ctx, params)
 }
 
-func (r *StoreItemRepository) UpdateStoreItem(ctx context.Context, params sqlc.UpdateStoreItemParams) error {
+func (r *StoreItemRepository) UpdateStoreItem(ctx context.Context, params sqlc.UpdateStoreItemParams) (sqlc.StoreItem, error) {
 	return r.queries.UpdateStoreItem(ctx, params)
 }
 

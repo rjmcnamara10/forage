@@ -25,8 +25,8 @@ SELECT servings FROM meals WHERE id = $1;
 -- name: BatchGetMeals :many
 SELECT id, name, meal_category_id, servings FROM meals WHERE id = ANY($1::int[]);
 
--- name: UpdateInventoryBatch :exec
-UPDATE inventory_items SET stored_amount = $1 WHERE item_id = $2;
+-- name: UpdateInventoryBatch :one
+UPDATE inventory_items SET stored_amount = $1 WHERE item_id = $2 RETURNING id, item_id, unit_id, stored_amount;
 
 -- name: GetStoreItemsForItems :many
 SELECT 

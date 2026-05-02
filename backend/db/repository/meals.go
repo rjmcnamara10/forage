@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+
 	"github.com/rjmcnamara10/forage/db/sqlc"
 )
 
@@ -35,7 +36,7 @@ func (r *MealRepository) CreateMeal(ctx context.Context, name string, categoryID
 	return r.queries.CreateMeal(ctx, sqlc.CreateMealParams{Name: name, MealCategoryID: categoryID, Servings: servings})
 }
 
-func (r *MealRepository) UpdateMeal(ctx context.Context, id int32, name string, categoryID int32, servings int32) error {
+func (r *MealRepository) UpdateMeal(ctx context.Context, id int32, name string, categoryID int32, servings int32) (sqlc.Meal, error) {
 	return r.queries.UpdateMeal(ctx, sqlc.UpdateMealParams{Name: name, MealCategoryID: categoryID, Servings: servings, ID: id})
 }
 
@@ -88,7 +89,7 @@ func (r *MealIngredientRepository) CreateMealIngredient(ctx context.Context, mea
 	})
 }
 
-func (r *MealIngredientRepository) UpdateMealIngredient(ctx context.Context, id int32, ingredientID int32, unitID sql.NullInt32, requiredAmount sql.NullString, isSeasoning bool, depletesSlowly bool, altIngredientID sql.NullInt32) error {
+func (r *MealIngredientRepository) UpdateMealIngredient(ctx context.Context, id int32, ingredientID int32, unitID sql.NullInt32, requiredAmount sql.NullString, isSeasoning bool, depletesSlowly bool, altIngredientID sql.NullInt32) (sqlc.MealIngredient, error) {
 	return r.queries.UpdateMealIngredient(ctx, sqlc.UpdateMealIngredientParams{
 		IngredientID:          ingredientID,
 		UnitID:                unitID,

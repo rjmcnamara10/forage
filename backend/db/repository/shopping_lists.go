@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+
 	"github.com/rjmcnamara10/forage/db/sqlc"
 )
 
@@ -30,7 +31,7 @@ func (r *ShoppingListRepository) CreateShoppingList(ctx context.Context, name st
 	return r.queries.CreateShoppingList(ctx, name)
 }
 
-func (r *ShoppingListRepository) UpdateShoppingList(ctx context.Context, id int32, name string) error {
+func (r *ShoppingListRepository) UpdateShoppingList(ctx context.Context, id int32, name string) (sqlc.ShoppingList, error) {
 	return r.queries.UpdateShoppingList(ctx, sqlc.UpdateShoppingListParams{ID: id, Name: name})
 }
 
@@ -59,7 +60,7 @@ func (r *ShoppingListItemRepository) CreateShoppingListItem(ctx context.Context,
 	return r.queries.CreateShoppingListItem(ctx, params)
 }
 
-func (r *ShoppingListItemRepository) UpdateShoppingListItem(ctx context.Context, params sqlc.UpdateShoppingListItemParams) error {
+func (r *ShoppingListItemRepository) UpdateShoppingListItem(ctx context.Context, params sqlc.UpdateShoppingListItemParams) (sqlc.ShoppingListItem, error) {
 	return r.queries.UpdateShoppingListItem(ctx, params)
 }
 

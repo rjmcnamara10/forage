@@ -78,8 +78,8 @@ func (q *Queries) ListStores(ctx context.Context) ([]Store, error) {
 	return items, nil
 }
 
-const updateStore = `-- name: UpdateStore :exec
-UPDATE stores SET name = $1 WHERE id = $2
+const updateStore = `-- name: UpdateStore :one
+UPDATE stores SET name = $1 WHERE id = $2 RETURNING id, name
 `
 
 type UpdateStoreParams struct {
@@ -87,7 +87,9 @@ type UpdateStoreParams struct {
 	ID   int32  `json:"id"`
 }
 
-func (q *Queries) UpdateStore(ctx context.Context, arg UpdateStoreParams) error {
-	_, err := q.db.ExecContext(ctx, updateStore, arg.Name, arg.ID)
-	return err
+func (q *Queries) UpdateStore(ctx context.Context, arg UpdateStoreParams) (Store, error) {
+	row := q.db.QueryRowContext(ctx, updateStore, arg.Name, arg.ID)
+	var i Store
+	err := row.Scan(&i.ID, &i.Name)
+	return i, err
 }

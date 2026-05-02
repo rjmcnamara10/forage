@@ -248,10 +248,10 @@ func (q *Queries) ListShoppingListItems(ctx context.Context, shoppingListID int3
 	return items, nil
 }
 
-const updateShoppingListItem = `-- name: UpdateShoppingListItem :exec
+const updateShoppingListItem = `-- name: UpdateShoppingListItem :one
 UPDATE shopping_list_items 
 SET store_item_id = $1, purchase_quantity = $2, note = $3, custom_item_name = $4, shopping_list_order = $5 
-WHERE id = $6
+WHERE id = $6 RETURNING id, shopping_list_id, store_item_id, purchase_quantity, note, custom_item_name, shopping_list_order
 `
 
 type UpdateShoppingListItemParams struct {
@@ -263,8 +263,8 @@ type UpdateShoppingListItemParams struct {
 	ID                int32          `json:"id"`
 }
 
-func (q *Queries) UpdateShoppingListItem(ctx context.Context, arg UpdateShoppingListItemParams) error {
-	_, err := q.db.ExecContext(ctx, updateShoppingListItem,
+func (q *Queries) UpdateShoppingListItem(ctx context.Context, arg UpdateShoppingListItemParams) (ShoppingListItem, error) {
+	row := q.db.QueryRowContext(ctx, updateShoppingListItem,
 		arg.StoreItemID,
 		arg.PurchaseQuantity,
 		arg.Note,
@@ -272,11 +272,21 @@ func (q *Queries) UpdateShoppingListItem(ctx context.Context, arg UpdateShopping
 		arg.ShoppingListOrder,
 		arg.ID,
 	)
-	return err
+	var i ShoppingListItem
+	err := row.Scan(
+		&i.ID,
+		&i.ShoppingListID,
+		&i.StoreItemID,
+		&i.PurchaseQuantity,
+		&i.Note,
+		&i.CustomItemName,
+		&i.ShoppingListOrder,
+	)
+	return i, err
 }
 
-const updateShoppingListItemsOrder = `-- name: UpdateShoppingListItemsOrder :exec
-UPDATE shopping_list_items SET shopping_list_order = $1 WHERE id = $2
+const updateShoppingListItemsOrder = `-- name: UpdateShoppingListItemsOrder :one
+UPDATE shopping_list_items SET shopping_list_order = $1 WHERE id = $2 RETURNING id, shopping_list_id, store_item_id, purchase_quantity, note, custom_item_name, shopping_list_order
 `
 
 type UpdateShoppingListItemsOrderParams struct {
@@ -284,7 +294,17 @@ type UpdateShoppingListItemsOrderParams struct {
 	ID                int32 `json:"id"`
 }
 
-func (q *Queries) UpdateShoppingListItemsOrder(ctx context.Context, arg UpdateShoppingListItemsOrderParams) error {
-	_, err := q.db.ExecContext(ctx, updateShoppingListItemsOrder, arg.ShoppingListOrder, arg.ID)
-	return err
+func (q *Queries) UpdateShoppingListItemsOrder(ctx context.Context, arg UpdateShoppingListItemsOrderParams) (ShoppingListItem, error) {
+	row := q.db.QueryRowContext(ctx, updateShoppingListItemsOrder, arg.ShoppingListOrder, arg.ID)
+	var i ShoppingListItem
+	err := row.Scan(
+		&i.ID,
+		&i.ShoppingListID,
+		&i.StoreItemID,
+		&i.PurchaseQuantity,
+		&i.Note,
+		&i.CustomItemName,
+		&i.ShoppingListOrder,
+	)
+	return i, err
 }

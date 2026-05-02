@@ -160,8 +160,8 @@ func (q *Queries) ListShoppingListsCount(ctx context.Context) (int64, error) {
 	return count, err
 }
 
-const updateShoppingList = `-- name: UpdateShoppingList :exec
-UPDATE shopping_lists SET name = $1 WHERE id = $2
+const updateShoppingList = `-- name: UpdateShoppingList :one
+UPDATE shopping_lists SET name = $1 WHERE id = $2 RETURNING id, name, created_at
 `
 
 type UpdateShoppingListParams struct {
@@ -169,7 +169,9 @@ type UpdateShoppingListParams struct {
 	ID   int32  `json:"id"`
 }
 
-func (q *Queries) UpdateShoppingList(ctx context.Context, arg UpdateShoppingListParams) error {
-	_, err := q.db.ExecContext(ctx, updateShoppingList, arg.Name, arg.ID)
-	return err
+func (q *Queries) UpdateShoppingList(ctx context.Context, arg UpdateShoppingListParams) (ShoppingList, error) {
+	row := q.db.QueryRowContext(ctx, updateShoppingList, arg.Name, arg.ID)
+	var i ShoppingList
+	err := row.Scan(&i.ID, &i.Name, &i.CreatedAt)
+	return i, err
 }

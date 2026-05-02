@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+
 	"github.com/rjmcnamara10/forage/db/sqlc"
 )
 
@@ -30,7 +31,7 @@ func (r *UnitRepository) CreateUnit(ctx context.Context, name string) (sqlc.Unit
 	return r.queries.CreateUnit(ctx, name)
 }
 
-func (r *UnitRepository) UpdateUnit(ctx context.Context, id int32, name string) error {
+func (r *UnitRepository) UpdateUnit(ctx context.Context, id int32, name string) (sqlc.Unit, error) {
 	return r.queries.UpdateUnit(ctx, sqlc.UpdateUnitParams{ID: id, Name: name})
 }
 

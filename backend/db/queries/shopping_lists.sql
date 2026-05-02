@@ -10,8 +10,8 @@ SELECT COUNT(*) as count FROM shopping_lists;
 -- name: CreateShoppingList :one
 INSERT INTO shopping_lists (name, created_at) VALUES ($1, CURRENT_TIMESTAMP) RETURNING id, name, created_at;
 
--- name: UpdateShoppingList :exec
-UPDATE shopping_lists SET name = $1 WHERE id = $2;
+-- name: UpdateShoppingList :one
+UPDATE shopping_lists SET name = $1 WHERE id = $2 RETURNING id, name, created_at;
 
 -- name: DeleteShoppingList :exec
 DELETE FROM shopping_lists WHERE id = $1;

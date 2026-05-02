@@ -14,10 +14,10 @@ INSERT INTO store_items (store_id, item_id, purchase_unit_id, inventory_unit_id,
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
 RETURNING id, store_id, item_id, purchase_unit_id, inventory_unit_id, inventory_units_per_purchase, purchased_by_decimal, is_favorite, store_traversal_order;
 
--- name: UpdateStoreItem :exec
+-- name: UpdateStoreItem :one
 UPDATE store_items 
 SET purchase_unit_id = $1, inventory_unit_id = $2, inventory_units_per_purchase = $3, purchased_by_decimal = $4, is_favorite = $5, store_traversal_order = $6 
-WHERE id = $7;
+WHERE id = $7 RETURNING id, store_id, item_id, purchase_unit_id, inventory_unit_id, inventory_units_per_purchase, purchased_by_decimal, is_favorite, store_traversal_order;
 
 -- name: DeleteStoreItem :exec
 DELETE FROM store_items WHERE id = $1;

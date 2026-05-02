@@ -147,8 +147,8 @@ func (q *Queries) ListMealCategories(ctx context.Context) ([]MealCategory, error
 	return items, nil
 }
 
-const updateItemCategory = `-- name: UpdateItemCategory :exec
-UPDATE item_categories SET name = $1 WHERE id = $2
+const updateItemCategory = `-- name: UpdateItemCategory :one
+UPDATE item_categories SET name = $1 WHERE id = $2 RETURNING id, name
 `
 
 type UpdateItemCategoryParams struct {
@@ -156,13 +156,15 @@ type UpdateItemCategoryParams struct {
 	ID   int32  `json:"id"`
 }
 
-func (q *Queries) UpdateItemCategory(ctx context.Context, arg UpdateItemCategoryParams) error {
-	_, err := q.db.ExecContext(ctx, updateItemCategory, arg.Name, arg.ID)
-	return err
+func (q *Queries) UpdateItemCategory(ctx context.Context, arg UpdateItemCategoryParams) (ItemCategory, error) {
+	row := q.db.QueryRowContext(ctx, updateItemCategory, arg.Name, arg.ID)
+	var i ItemCategory
+	err := row.Scan(&i.ID, &i.Name)
+	return i, err
 }
 
-const updateMealCategory = `-- name: UpdateMealCategory :exec
-UPDATE meal_categories SET name = $1 WHERE id = $2
+const updateMealCategory = `-- name: UpdateMealCategory :one
+UPDATE meal_categories SET name = $1 WHERE id = $2 RETURNING id, name
 `
 
 type UpdateMealCategoryParams struct {
@@ -170,7 +172,9 @@ type UpdateMealCategoryParams struct {
 	ID   int32  `json:"id"`
 }
 
-func (q *Queries) UpdateMealCategory(ctx context.Context, arg UpdateMealCategoryParams) error {
-	_, err := q.db.ExecContext(ctx, updateMealCategory, arg.Name, arg.ID)
-	return err
+func (q *Queries) UpdateMealCategory(ctx context.Context, arg UpdateMealCategoryParams) (MealCategory, error) {
+	row := q.db.QueryRowContext(ctx, updateMealCategory, arg.Name, arg.ID)
+	var i MealCategory
+	err := row.Scan(&i.ID, &i.Name)
+	return i, err
 }

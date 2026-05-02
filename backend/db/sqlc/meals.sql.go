@@ -246,8 +246,8 @@ func (q *Queries) SearchMealsCount(ctx context.Context, name string) (int64, err
 	return count, err
 }
 
-const updateMeal = `-- name: UpdateMeal :exec
-UPDATE meals SET name = $1, meal_category_id = $2, servings = $3 WHERE id = $4
+const updateMeal = `-- name: UpdateMeal :one
+UPDATE meals SET name = $1, meal_category_id = $2, servings = $3 WHERE id = $4 RETURNING id, name, meal_category_id, servings
 `
 
 type UpdateMealParams struct {
@@ -257,12 +257,19 @@ type UpdateMealParams struct {
 	ID             int32  `json:"id"`
 }
 
-func (q *Queries) UpdateMeal(ctx context.Context, arg UpdateMealParams) error {
-	_, err := q.db.ExecContext(ctx, updateMeal,
+func (q *Queries) UpdateMeal(ctx context.Context, arg UpdateMealParams) (Meal, error) {
+	row := q.db.QueryRowContext(ctx, updateMeal,
 		arg.Name,
 		arg.MealCategoryID,
 		arg.Servings,
 		arg.ID,
 	)
-	return err
+	var i Meal
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.MealCategoryID,
+		&i.Servings,
+	)
+	return i, err
 }

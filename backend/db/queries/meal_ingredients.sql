@@ -11,10 +11,10 @@ INSERT INTO meal_ingredients (meal_id, ingredient_id, unit_id, required_amount, 
 VALUES ($1, $2, $3, $4, $5, $6, $7) 
 RETURNING id, meal_id, ingredient_id, unit_id, required_amount, is_seasoning, depletes_slowly, alternate_ingredient_id;
 
--- name: UpdateMealIngredient :exec
+-- name: UpdateMealIngredient :one
 UPDATE meal_ingredients 
 SET ingredient_id = $1, unit_id = $2, required_amount = $3, is_seasoning = $4, depletes_slowly = $5, alternate_ingredient_id = $6 
-WHERE id = $7;
+WHERE id = $7 RETURNING id, meal_id, ingredient_id, unit_id, required_amount, is_seasoning, depletes_slowly, alternate_ingredient_id;
 
 -- name: DeleteMealIngredient :exec
 DELETE FROM meal_ingredients WHERE id = $1;

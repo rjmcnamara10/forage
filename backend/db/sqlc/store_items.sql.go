@@ -386,10 +386,10 @@ func (q *Queries) SearchStoreItemsByStore(ctx context.Context, arg SearchStoreIt
 	return items, nil
 }
 
-const updateStoreItem = `-- name: UpdateStoreItem :exec
+const updateStoreItem = `-- name: UpdateStoreItem :one
 UPDATE store_items 
 SET purchase_unit_id = $1, inventory_unit_id = $2, inventory_units_per_purchase = $3, purchased_by_decimal = $4, is_favorite = $5, store_traversal_order = $6 
-WHERE id = $7
+WHERE id = $7 RETURNING id, store_id, item_id, purchase_unit_id, inventory_unit_id, inventory_units_per_purchase, purchased_by_decimal, is_favorite, store_traversal_order
 `
 
 type UpdateStoreItemParams struct {
@@ -402,8 +402,8 @@ type UpdateStoreItemParams struct {
 	ID                        int32         `json:"id"`
 }
 
-func (q *Queries) UpdateStoreItem(ctx context.Context, arg UpdateStoreItemParams) error {
-	_, err := q.db.ExecContext(ctx, updateStoreItem,
+func (q *Queries) UpdateStoreItem(ctx context.Context, arg UpdateStoreItemParams) (StoreItem, error) {
+	row := q.db.QueryRowContext(ctx, updateStoreItem,
 		arg.PurchaseUnitID,
 		arg.InventoryUnitID,
 		arg.InventoryUnitsPerPurchase,
@@ -412,5 +412,17 @@ func (q *Queries) UpdateStoreItem(ctx context.Context, arg UpdateStoreItemParams
 		arg.StoreTraversalOrder,
 		arg.ID,
 	)
-	return err
+	var i StoreItem
+	err := row.Scan(
+		&i.ID,
+		&i.StoreID,
+		&i.ItemID,
+		&i.PurchaseUnitID,
+		&i.InventoryUnitID,
+		&i.InventoryUnitsPerPurchase,
+		&i.PurchasedByDecimal,
+		&i.IsFavorite,
+		&i.StoreTraversalOrder,
+	)
+	return i, err
 }

@@ -13,11 +13,11 @@ SELECT COUNT(*) as count FROM inventory_items;
 -- name: CreateInventoryItem :one
 INSERT INTO inventory_items (item_id, unit_id, stored_amount) VALUES ($1, $2, $3) RETURNING id, item_id, unit_id, stored_amount;
 
--- name: UpdateInventoryItem :exec
-UPDATE inventory_items SET unit_id = $1, stored_amount = $2 WHERE item_id = $3;
+-- name: UpdateInventoryItem :one
+UPDATE inventory_items SET unit_id = $1, stored_amount = $2 WHERE item_id = $3 RETURNING id, item_id, unit_id, stored_amount;
 
--- name: UpdateInventoryStoredAmount :exec
-UPDATE inventory_items SET stored_amount = $1 WHERE item_id = $2;
+-- name: UpdateInventoryStoredAmount :one
+UPDATE inventory_items SET stored_amount = $1 WHERE item_id = $2 RETURNING id, item_id, unit_id, stored_amount;
 
 -- name: DeleteInventoryItem :exec
 DELETE FROM inventory_items WHERE item_id = $1;

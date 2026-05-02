@@ -222,8 +222,8 @@ func (q *Queries) GetStoreItemsForItems(ctx context.Context, dollar_1 []int32) (
 	return items, nil
 }
 
-const updateInventoryBatch = `-- name: UpdateInventoryBatch :exec
-UPDATE inventory_items SET stored_amount = $1 WHERE item_id = $2
+const updateInventoryBatch = `-- name: UpdateInventoryBatch :one
+UPDATE inventory_items SET stored_amount = $1 WHERE item_id = $2 RETURNING id, item_id, unit_id, stored_amount
 `
 
 type UpdateInventoryBatchParams struct {
@@ -231,7 +231,14 @@ type UpdateInventoryBatchParams struct {
 	ItemID       int32          `json:"item_id"`
 }
 
-func (q *Queries) UpdateInventoryBatch(ctx context.Context, arg UpdateInventoryBatchParams) error {
-	_, err := q.db.ExecContext(ctx, updateInventoryBatch, arg.StoredAmount, arg.ItemID)
-	return err
+func (q *Queries) UpdateInventoryBatch(ctx context.Context, arg UpdateInventoryBatchParams) (InventoryItem, error) {
+	row := q.db.QueryRowContext(ctx, updateInventoryBatch, arg.StoredAmount, arg.ItemID)
+	var i InventoryItem
+	err := row.Scan(
+		&i.ID,
+		&i.ItemID,
+		&i.UnitID,
+		&i.StoredAmount,
+	)
+	return i, err
 }

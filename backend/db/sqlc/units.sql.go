@@ -78,8 +78,8 @@ func (q *Queries) ListUnits(ctx context.Context) ([]Unit, error) {
 	return items, nil
 }
 
-const updateUnit = `-- name: UpdateUnit :exec
-UPDATE units SET name = $1 WHERE id = $2
+const updateUnit = `-- name: UpdateUnit :one
+UPDATE units SET name = $1 WHERE id = $2 RETURNING id, name
 `
 
 type UpdateUnitParams struct {
@@ -87,7 +87,9 @@ type UpdateUnitParams struct {
 	ID   int32  `json:"id"`
 }
 
-func (q *Queries) UpdateUnit(ctx context.Context, arg UpdateUnitParams) error {
-	_, err := q.db.ExecContext(ctx, updateUnit, arg.Name, arg.ID)
-	return err
+func (q *Queries) UpdateUnit(ctx context.Context, arg UpdateUnitParams) (Unit, error) {
+	row := q.db.QueryRowContext(ctx, updateUnit, arg.Name, arg.ID)
+	var i Unit
+	err := row.Scan(&i.ID, &i.Name)
+	return i, err
 }

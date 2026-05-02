@@ -199,8 +199,8 @@ func (q *Queries) ListInventoryItemsCount(ctx context.Context) (int64, error) {
 	return count, err
 }
 
-const updateInventoryItem = `-- name: UpdateInventoryItem :exec
-UPDATE inventory_items SET unit_id = $1, stored_amount = $2 WHERE item_id = $3
+const updateInventoryItem = `-- name: UpdateInventoryItem :one
+UPDATE inventory_items SET unit_id = $1, stored_amount = $2 WHERE item_id = $3 RETURNING id, item_id, unit_id, stored_amount
 `
 
 type UpdateInventoryItemParams struct {
@@ -209,13 +209,20 @@ type UpdateInventoryItemParams struct {
 	ItemID       int32          `json:"item_id"`
 }
 
-func (q *Queries) UpdateInventoryItem(ctx context.Context, arg UpdateInventoryItemParams) error {
-	_, err := q.db.ExecContext(ctx, updateInventoryItem, arg.UnitID, arg.StoredAmount, arg.ItemID)
-	return err
+func (q *Queries) UpdateInventoryItem(ctx context.Context, arg UpdateInventoryItemParams) (InventoryItem, error) {
+	row := q.db.QueryRowContext(ctx, updateInventoryItem, arg.UnitID, arg.StoredAmount, arg.ItemID)
+	var i InventoryItem
+	err := row.Scan(
+		&i.ID,
+		&i.ItemID,
+		&i.UnitID,
+		&i.StoredAmount,
+	)
+	return i, err
 }
 
-const updateInventoryStoredAmount = `-- name: UpdateInventoryStoredAmount :exec
-UPDATE inventory_items SET stored_amount = $1 WHERE item_id = $2
+const updateInventoryStoredAmount = `-- name: UpdateInventoryStoredAmount :one
+UPDATE inventory_items SET stored_amount = $1 WHERE item_id = $2 RETURNING id, item_id, unit_id, stored_amount
 `
 
 type UpdateInventoryStoredAmountParams struct {
@@ -223,7 +230,14 @@ type UpdateInventoryStoredAmountParams struct {
 	ItemID       int32          `json:"item_id"`
 }
 
-func (q *Queries) UpdateInventoryStoredAmount(ctx context.Context, arg UpdateInventoryStoredAmountParams) error {
-	_, err := q.db.ExecContext(ctx, updateInventoryStoredAmount, arg.StoredAmount, arg.ItemID)
-	return err
+func (q *Queries) UpdateInventoryStoredAmount(ctx context.Context, arg UpdateInventoryStoredAmountParams) (InventoryItem, error) {
+	row := q.db.QueryRowContext(ctx, updateInventoryStoredAmount, arg.StoredAmount, arg.ItemID)
+	var i InventoryItem
+	err := row.Scan(
+		&i.ID,
+		&i.ItemID,
+		&i.UnitID,
+		&i.StoredAmount,
+	)
+	return i, err
 }

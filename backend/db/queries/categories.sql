@@ -10,8 +10,8 @@ SELECT id, name FROM item_categories ORDER BY name ASC;
 -- name: CreateItemCategory :one
 INSERT INTO item_categories (name) VALUES ($1) RETURNING id, name;
 
--- name: UpdateItemCategory :exec
-UPDATE item_categories SET name = $1 WHERE id = $2;
+-- name: UpdateItemCategory :one
+UPDATE item_categories SET name = $1 WHERE id = $2 RETURNING id, name;
 
 -- name: DeleteItemCategory :exec
 DELETE FROM item_categories WHERE id = $1;
@@ -28,8 +28,8 @@ SELECT id, name FROM meal_categories ORDER BY name ASC;
 -- name: CreateMealCategory :one
 INSERT INTO meal_categories (name) VALUES ($1) RETURNING id, name;
 
--- name: UpdateMealCategory :exec
-UPDATE meal_categories SET name = $1 WHERE id = $2;
+-- name: UpdateMealCategory :one
+UPDATE meal_categories SET name = $1 WHERE id = $2 RETURNING id, name;
 
 -- name: DeleteMealCategory :exec
 DELETE FROM meal_categories WHERE id = $1;
