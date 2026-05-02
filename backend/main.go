@@ -3,9 +3,11 @@ package main
 import (
 	"log"
 
+	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/rjmcnamara10/forage/db"
 	"github.com/rjmcnamara10/forage/db/repository"
+	"github.com/rjmcnamara10/forage/handlers"
 )
 
 func main() {
@@ -20,15 +22,12 @@ func main() {
 	}
 	defer conn.Close()
 
-	// Initialize repositories
 	repos := repository.NewRepositories(conn)
 
-	// TODO: Initialize Gin router and add handlers
-	// For now, just verify the repositories are initialized
-	log.Println("Repositories initialized successfully")
-	log.Printf("Units repository: %v\n", repos.Units)
-	log.Printf("Items repository: %v\n", repos.Items)
-	log.Printf("Meals repository: %v\n", repos.Meals)
-	log.Printf("Stores repository: %v\n", repos.Stores)
-	log.Printf("Shopping lists repository: %v\n", repos.ShoppingLists)
+	router := gin.Default()
+	handlers.RegisterRoutes(router, repos)
+
+	if err := router.Run(":8080"); err != nil {
+		log.Fatalf("Failed to start server: %v", err)
+	}
 }
