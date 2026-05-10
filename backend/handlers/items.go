@@ -9,7 +9,13 @@ import (
 
 // Request/Response DTOs
 type CreateItemRequest struct {
-	Name string `json:"name" binding:"required"`
+	Name        string  `json:"name" binding:"required"`
+	CategoryIDs []int32 `json:"category_ids" binding:"required,min=1"`
+}
+
+type UpdateItemRequest struct {
+	Name        string  `json:"name" binding:"required"`
+	CategoryIDs []int32 `json:"category_ids" binding:"required,min=1"`
 }
 
 type ItemResponse struct {
@@ -84,10 +90,34 @@ func createItem(repos *repository.Repositories) gin.HandlerFunc {
 			return
 		}
 
+		// Validate that at least one category is provided
+		if len(req.CategoryIDs) == 0 {
+			c.JSON(400, gin.H{"error": "At least one category_id must be provided"})
+			return
+		}
+
+		// Validate all categories exist
+		for _, categoryID := range req.CategoryIDs {
+			_, err := repos.ItemCategories.GetItemCategory(c.Request.Context(), categoryID)
+			if err != nil {
+				c.JSON(400, gin.H{"error": "One or more categories do not exist"})
+				return
+			}
+		}
+
 		item, err := repos.Items.CreateItem(c.Request.Context(), req.Name)
 		if err != nil {
 			c.JSON(500, gin.H{"error": "Failed to create item"})
 			return
+		}
+
+		// Add categories to item
+		for _, categoryID := range req.CategoryIDs {
+			err := repos.Items.AddItemCategory(c.Request.Context(), item.ID, categoryID)
+			if err != nil {
+				c.JSON(500, gin.H{"error": "Failed to add categories to item"})
+				return
+			}
 		}
 
 		c.JSON(201, ItemResponse{
@@ -106,16 +136,47 @@ func updateItem(repos *repository.Repositories) gin.HandlerFunc {
 			return
 		}
 
-		var req CreateItemRequest
+		var req UpdateItemRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
 			c.JSON(400, gin.H{"error": "Invalid request body"})
 			return
+		}
+
+		// Validate that at least one category is provided
+		if len(req.CategoryIDs) == 0 {
+			c.JSON(400, gin.H{"error": "At least one category_id must be provided"})
+			return
+		}
+
+		// Validate all categories exist
+		for _, categoryID := range req.CategoryIDs {
+			_, err := repos.ItemCategories.GetItemCategory(c.Request.Context(), categoryID)
+			if err != nil {
+				c.JSON(400, gin.H{"error": "One or more categories do not exist"})
+				return
+			}
 		}
 
 		item, err := repos.Items.UpdateItem(c.Request.Context(), int32(id), req.Name)
 		if err != nil {
 			c.JSON(500, gin.H{"error": "Failed to update item"})
 			return
+		}
+
+		// Remove all existing categories
+		err = repos.Items.RemoveAllItemCategories(c.Request.Context(), int32(id))
+		if err != nil {
+			c.JSON(500, gin.H{"error": "Failed to update item categories"})
+			return
+		}
+
+		// Add new categories
+		for _, categoryID := range req.CategoryIDs {
+			err := repos.Items.AddItemCategory(c.Request.Context(), int32(id), categoryID)
+			if err != nil {
+				c.JSON(500, gin.H{"error": "Failed to add categories to item"})
+				return
+			}
 		}
 
 		c.JSON(200, ItemResponse{
