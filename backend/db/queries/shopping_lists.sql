@@ -4,6 +4,9 @@ SELECT id, name, created_at FROM shopping_lists WHERE id = $1;
 -- name: ListShoppingLists :many
 SELECT id, name, created_at FROM shopping_lists ORDER BY created_at DESC LIMIT $1 OFFSET $2;
 
+-- name: ListShoppingListsAsc :many
+SELECT id, name, created_at FROM shopping_lists ORDER BY created_at ASC LIMIT $1 OFFSET $2;
+
 -- name: ListShoppingListsCount :one
 SELECT COUNT(*) as count FROM shopping_lists;
 
@@ -24,6 +27,12 @@ SELECT DISTINCT sl.id, sl.name, sl.created_at FROM shopping_lists sl
 JOIN shopping_list_items sli ON sl.id = sli.shopping_list_id
 WHERE sli.store_item_id = $1
 ORDER BY sl.created_at DESC LIMIT $2 OFFSET $3;
+
+-- name: GetShoppingListsContainingStoreItemAsc :many
+SELECT DISTINCT sl.id, sl.name, sl.created_at FROM shopping_lists sl
+JOIN shopping_list_items sli ON sl.id = sli.shopping_list_id
+WHERE sli.store_item_id = $1
+ORDER BY sl.created_at ASC LIMIT $2 OFFSET $3;
 
 -- name: GetShoppingListsContainingStoreItemCount :one
 SELECT COUNT(DISTINCT sl.id) as count FROM shopping_lists sl

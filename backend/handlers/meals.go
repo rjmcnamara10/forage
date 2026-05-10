@@ -32,6 +32,10 @@ func getMeals(repos *repository.Repositories) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		limit := int32(50)
 		offset := int32(0)
+		sortBy := "name"
+		sortOrder := "ASC"
+		query := c.Query("q")
+		mealCategoryID := c.Query("meal_category_id")
 
 		if l := c.Query("limit"); l != "" {
 			if parsed, err := strconv.ParseInt(l, 10, 32); err == nil {
@@ -45,23 +49,81 @@ func getMeals(repos *repository.Repositories) gin.HandlerFunc {
 			}
 		}
 
-		meals, err := repos.Meals.ListMeals(c.Request.Context(), limit, offset)
-		if err != nil {
-			c.JSON(500, gin.H{"error": "Failed to fetch meals"})
-			return
+		if sb := c.Query("sort_by"); sb != "" && (sb == "name" || sb == "servings") {
+			sortBy = sb
 		}
 
-		response := make([]MealResponse, len(meals))
-		for i, meal := range meals {
-			response[i] = MealResponse{
-				ID:             meal.ID,
-				Name:           meal.Name,
-				MealCategoryID: meal.MealCategoryID,
-				Servings:       meal.Servings,
+		if so := c.Query("sort_order"); so != "" && (so == "ASC" || so == "DESC") {
+			sortOrder = so
+		}
+
+		var meals []MealResponse
+		var total int64
+
+		if query != "" {
+			// Search mode
+			searchMeals, err := repos.Meals.SearchMeals(c.Request.Context(), query, limit, offset, sortOrder)
+			if err != nil {
+				c.JSON(500, gin.H{"error": "Failed to fetch meals"})
+				return
 			}
+			meals = make([]MealResponse, len(searchMeals))
+			for i, meal := range searchMeals {
+				meals[i] = MealResponse{
+					ID:             meal.ID,
+					Name:           meal.Name,
+					MealCategoryID: meal.MealCategoryID,
+					Servings:       meal.Servings,
+				}
+			}
+			total, _ = repos.Meals.SearchMealsCount(c.Request.Context(), query)
+		} else if mealCategoryID != "" {
+			// Category filter mode
+			catID, err := strconv.ParseInt(mealCategoryID, 10, 32)
+			if err != nil {
+				c.JSON(400, gin.H{"error": "Invalid meal category ID"})
+				return
+			}
+			filterMeals, err := repos.Meals.ListMealsByCategory(c.Request.Context(), int32(catID), limit, offset, sortBy, sortOrder)
+			if err != nil {
+				c.JSON(500, gin.H{"error": "Failed to fetch meals"})
+				return
+			}
+			meals = make([]MealResponse, len(filterMeals))
+			for i, meal := range filterMeals {
+				meals[i] = MealResponse{
+					ID:             meal.ID,
+					Name:           meal.Name,
+					MealCategoryID: meal.MealCategoryID,
+					Servings:       meal.Servings,
+				}
+			}
+			total, _ = repos.Meals.ListMealsByCategoryCount(c.Request.Context(), int32(catID))
+		} else {
+			// List all meals
+			listMeals, err := repos.Meals.ListMeals(c.Request.Context(), limit, offset, sortBy, sortOrder)
+			if err != nil {
+				c.JSON(500, gin.H{"error": "Failed to fetch meals"})
+				return
+			}
+			meals = make([]MealResponse, len(listMeals))
+			for i, meal := range listMeals {
+				meals[i] = MealResponse{
+					ID:             meal.ID,
+					Name:           meal.Name,
+					MealCategoryID: meal.MealCategoryID,
+					Servings:       meal.Servings,
+				}
+			}
+			total, _ = repos.Meals.ListMealsCount(c.Request.Context())
 		}
 
-		c.JSON(200, response)
+		c.JSON(200, PaginatedResponse{
+			Data:   meals,
+			Total:  total,
+			Limit:  limit,
+			Offset: offset,
+		})
 	}
 }
 

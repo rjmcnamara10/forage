@@ -175,6 +175,82 @@ func (q *Queries) ListMealsByCategory(ctx context.Context, arg ListMealsByCatego
 	return items, nil
 }
 
+const listMealsByCategoryByServingsAsc = `-- name: ListMealsByCategoryByServingsAsc :many
+SELECT id, name, meal_category_id, servings FROM meals WHERE meal_category_id = $1 ORDER BY servings ASC LIMIT $2 OFFSET $3
+`
+
+type ListMealsByCategoryByServingsAscParams struct {
+	MealCategoryID int32 `json:"meal_category_id"`
+	Limit          int32 `json:"limit"`
+	Offset         int32 `json:"offset"`
+}
+
+func (q *Queries) ListMealsByCategoryByServingsAsc(ctx context.Context, arg ListMealsByCategoryByServingsAscParams) ([]Meal, error) {
+	rows, err := q.db.QueryContext(ctx, listMealsByCategoryByServingsAsc, arg.MealCategoryID, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Meal
+	for rows.Next() {
+		var i Meal
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.MealCategoryID,
+			&i.Servings,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listMealsByCategoryByServingsDesc = `-- name: ListMealsByCategoryByServingsDesc :many
+SELECT id, name, meal_category_id, servings FROM meals WHERE meal_category_id = $1 ORDER BY servings DESC LIMIT $2 OFFSET $3
+`
+
+type ListMealsByCategoryByServingsDescParams struct {
+	MealCategoryID int32 `json:"meal_category_id"`
+	Limit          int32 `json:"limit"`
+	Offset         int32 `json:"offset"`
+}
+
+func (q *Queries) ListMealsByCategoryByServingsDesc(ctx context.Context, arg ListMealsByCategoryByServingsDescParams) ([]Meal, error) {
+	rows, err := q.db.QueryContext(ctx, listMealsByCategoryByServingsDesc, arg.MealCategoryID, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Meal
+	for rows.Next() {
+		var i Meal
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.MealCategoryID,
+			&i.Servings,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listMealsByCategoryCount = `-- name: ListMealsByCategoryCount :one
 SELECT COUNT(*) as count FROM meals WHERE meal_category_id = $1
 `
@@ -186,6 +262,118 @@ func (q *Queries) ListMealsByCategoryCount(ctx context.Context, mealCategoryID i
 	return count, err
 }
 
+const listMealsByCategoryDesc = `-- name: ListMealsByCategoryDesc :many
+SELECT id, name, meal_category_id, servings FROM meals WHERE meal_category_id = $1 ORDER BY name DESC LIMIT $2 OFFSET $3
+`
+
+type ListMealsByCategoryDescParams struct {
+	MealCategoryID int32 `json:"meal_category_id"`
+	Limit          int32 `json:"limit"`
+	Offset         int32 `json:"offset"`
+}
+
+func (q *Queries) ListMealsByCategoryDesc(ctx context.Context, arg ListMealsByCategoryDescParams) ([]Meal, error) {
+	rows, err := q.db.QueryContext(ctx, listMealsByCategoryDesc, arg.MealCategoryID, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Meal
+	for rows.Next() {
+		var i Meal
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.MealCategoryID,
+			&i.Servings,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listMealsByServingsAsc = `-- name: ListMealsByServingsAsc :many
+SELECT id, name, meal_category_id, servings FROM meals ORDER BY servings ASC LIMIT $1 OFFSET $2
+`
+
+type ListMealsByServingsAscParams struct {
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
+
+func (q *Queries) ListMealsByServingsAsc(ctx context.Context, arg ListMealsByServingsAscParams) ([]Meal, error) {
+	rows, err := q.db.QueryContext(ctx, listMealsByServingsAsc, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Meal
+	for rows.Next() {
+		var i Meal
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.MealCategoryID,
+			&i.Servings,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listMealsByServingsDesc = `-- name: ListMealsByServingsDesc :many
+SELECT id, name, meal_category_id, servings FROM meals ORDER BY servings DESC LIMIT $1 OFFSET $2
+`
+
+type ListMealsByServingsDescParams struct {
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
+
+func (q *Queries) ListMealsByServingsDesc(ctx context.Context, arg ListMealsByServingsDescParams) ([]Meal, error) {
+	rows, err := q.db.QueryContext(ctx, listMealsByServingsDesc, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Meal
+	for rows.Next() {
+		var i Meal
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.MealCategoryID,
+			&i.Servings,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listMealsCount = `-- name: ListMealsCount :one
 SELECT COUNT(*) as count FROM meals
 `
@@ -195,6 +383,43 @@ func (q *Queries) ListMealsCount(ctx context.Context) (int64, error) {
 	var count int64
 	err := row.Scan(&count)
 	return count, err
+}
+
+const listMealsDesc = `-- name: ListMealsDesc :many
+SELECT id, name, meal_category_id, servings FROM meals ORDER BY name DESC LIMIT $1 OFFSET $2
+`
+
+type ListMealsDescParams struct {
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
+
+func (q *Queries) ListMealsDesc(ctx context.Context, arg ListMealsDescParams) ([]Meal, error) {
+	rows, err := q.db.QueryContext(ctx, listMealsDesc, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Meal
+	for rows.Next() {
+		var i Meal
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.MealCategoryID,
+			&i.Servings,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const searchMeals = `-- name: SearchMeals :many
@@ -244,6 +469,44 @@ func (q *Queries) SearchMealsCount(ctx context.Context, name string) (int64, err
 	var count int64
 	err := row.Scan(&count)
 	return count, err
+}
+
+const searchMealsDesc = `-- name: SearchMealsDesc :many
+SELECT id, name, meal_category_id, servings FROM meals WHERE name ILIKE $1 ORDER BY name DESC LIMIT $2 OFFSET $3
+`
+
+type SearchMealsDescParams struct {
+	Name   string `json:"name"`
+	Limit  int32  `json:"limit"`
+	Offset int32  `json:"offset"`
+}
+
+func (q *Queries) SearchMealsDesc(ctx context.Context, arg SearchMealsDescParams) ([]Meal, error) {
+	rows, err := q.db.QueryContext(ctx, searchMealsDesc, arg.Name, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Meal
+	for rows.Next() {
+		var i Meal
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.MealCategoryID,
+			&i.Servings,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const updateMeal = `-- name: UpdateMeal :one

@@ -29,10 +29,38 @@ type CategoryResponse struct {
 	Name string `json:"name"`
 }
 
+// Pagination response envelope
+type PaginatedCategoryResponse struct {
+	Data   interface{} `json:"data"`
+	Total  int64       `json:"total"`
+	Limit  int32       `json:"limit"`
+	Offset int32       `json:"offset"`
+}
+
 // GET /item-categories
 func getItemCategories(repos *repository.Repositories) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		categories, err := repos.ItemCategories.ListItemCategories(c.Request.Context())
+		limit := int32(50)
+		offset := int32(0)
+		sortOrder := "ASC"
+
+		if l := c.Query("limit"); l != "" {
+			if parsed, err := strconv.ParseInt(l, 10, 32); err == nil {
+				limit = int32(parsed)
+			}
+		}
+
+		if o := c.Query("offset"); o != "" {
+			if parsed, err := strconv.ParseInt(o, 10, 32); err == nil {
+				offset = int32(parsed)
+			}
+		}
+
+		if so := c.Query("sort_order"); so != "" && (so == "ASC" || so == "DESC") {
+			sortOrder = so
+		}
+
+		categories, err := repos.ItemCategories.ListItemCategories(c.Request.Context(), limit, offset, sortOrder)
 		if err != nil {
 			c.JSON(500, gin.H{"error": "Failed to fetch item categories"})
 			return
@@ -46,6 +74,7 @@ func getItemCategories(repos *repository.Repositories) gin.HandlerFunc {
 			}
 		}
 
+		// For now, return all categories count since we don't have a count query
 		c.JSON(200, response)
 	}
 }
@@ -144,7 +173,27 @@ func deleteItemCategory(repos *repository.Repositories) gin.HandlerFunc {
 // GET /meal-categories
 func getMealCategories(repos *repository.Repositories) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		categories, err := repos.MealCategories.ListMealCategories(c.Request.Context())
+		limit := int32(50)
+		offset := int32(0)
+		sortOrder := "ASC"
+
+		if l := c.Query("limit"); l != "" {
+			if parsed, err := strconv.ParseInt(l, 10, 32); err == nil {
+				limit = int32(parsed)
+			}
+		}
+
+		if o := c.Query("offset"); o != "" {
+			if parsed, err := strconv.ParseInt(o, 10, 32); err == nil {
+				offset = int32(parsed)
+			}
+		}
+
+		if so := c.Query("sort_order"); so != "" && (so == "ASC" || so == "DESC") {
+			sortOrder = so
+		}
+
+		categories, err := repos.MealCategories.ListMealCategories(c.Request.Context(), limit, offset, sortOrder)
 		if err != nil {
 			c.JSON(500, gin.H{"error": "Failed to fetch meal categories"})
 			return

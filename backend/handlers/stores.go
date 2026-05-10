@@ -24,7 +24,27 @@ type StoreResponse struct {
 // GET /stores
 func getStores(repos *repository.Repositories) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		stores, err := repos.Stores.ListStores(c.Request.Context())
+		limit := int32(50)
+		offset := int32(0)
+		sortOrder := "ASC"
+
+		if l := c.Query("limit"); l != "" {
+			if parsed, err := strconv.ParseInt(l, 10, 32); err == nil {
+				limit = int32(parsed)
+			}
+		}
+
+		if o := c.Query("offset"); o != "" {
+			if parsed, err := strconv.ParseInt(o, 10, 32); err == nil {
+				offset = int32(parsed)
+			}
+		}
+
+		if so := c.Query("sort_order"); so != "" && (so == "ASC" || so == "DESC") {
+			sortOrder = so
+		}
+
+		stores, err := repos.Stores.ListStores(c.Request.Context(), limit, offset, sortOrder)
 		if err != nil {
 			c.JSON(500, gin.H{"error": "Failed to fetch stores"})
 			return
@@ -38,7 +58,14 @@ func getStores(repos *repository.Repositories) gin.HandlerFunc {
 			}
 		}
 
-		c.JSON(200, response)
+		total, _ := repos.Stores.ListStoresCount(c.Request.Context())
+
+		c.JSON(200, PaginatedResponse{
+			Data:   response,
+			Total:  total,
+			Limit:  limit,
+			Offset: offset,
+		})
 	}
 }
 

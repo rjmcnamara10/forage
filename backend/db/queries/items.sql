@@ -48,5 +48,17 @@ WHERE icm.category_id = $1;
 -- name: SearchItems :many
 SELECT id, name FROM items WHERE name ILIKE $1 ORDER BY name ASC LIMIT $2 OFFSET $3;
 
+-- name: SearchItemsDesc :many
+SELECT id, name FROM items WHERE name ILIKE $1 ORDER BY name DESC LIMIT $2 OFFSET $3;
+
 -- name: SearchItemsCount :one
 SELECT COUNT(*) as count FROM items WHERE name ILIKE $1;
+
+-- name: ListItemsDesc :many
+SELECT id, name FROM items ORDER BY name DESC LIMIT $1 OFFSET $2;
+
+-- name: ListItemsByCategoryDesc :many
+SELECT DISTINCT i.id, i.name FROM items i
+JOIN item_category_mappings icm ON i.id = icm.item_id
+WHERE icm.category_id = $1
+ORDER BY i.name DESC LIMIT $2 OFFSET $3;

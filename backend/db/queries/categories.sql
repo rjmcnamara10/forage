@@ -7,6 +7,9 @@ SELECT id, name FROM item_categories WHERE name = $1;
 -- name: ListItemCategories :many
 SELECT id, name FROM item_categories ORDER BY name ASC;
 
+-- name: ListItemCategoriesDesc :many
+SELECT id, name FROM item_categories ORDER BY name DESC;
+
 -- name: CreateItemCategory :one
 INSERT INTO item_categories (name) VALUES ($1) RETURNING id, name;
 
@@ -24,6 +27,9 @@ SELECT id, name FROM meal_categories WHERE name = $1;
 
 -- name: ListMealCategories :many
 SELECT id, name FROM meal_categories ORDER BY name ASC;
+
+-- name: ListMealCategoriesDesc :many
+SELECT id, name FROM meal_categories ORDER BY name DESC;
 
 -- name: CreateMealCategory :one
 INSERT INTO meal_categories (name) VALUES ($1) RETURNING id, name;

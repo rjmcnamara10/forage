@@ -19,7 +19,11 @@ func (r *ShoppingListRepository) GetShoppingList(ctx context.Context, id int32) 
 	return r.queries.GetShoppingList(ctx, id)
 }
 
-func (r *ShoppingListRepository) ListShoppingLists(ctx context.Context, limit int32, offset int32) ([]sqlc.ShoppingList, error) {
+func (r *ShoppingListRepository) ListShoppingLists(ctx context.Context, limit int32, offset int32, sortOrder string) ([]sqlc.ShoppingList, error) {
+	// Default sort is DESC (most recent first)
+	if sortOrder == "ASC" {
+		return r.queries.ListShoppingListsAsc(ctx, sqlc.ListShoppingListsAscParams{Limit: limit, Offset: offset})
+	}
 	return r.queries.ListShoppingLists(ctx, sqlc.ListShoppingListsParams{Limit: limit, Offset: offset})
 }
 

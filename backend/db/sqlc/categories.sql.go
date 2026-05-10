@@ -120,12 +120,66 @@ func (q *Queries) ListItemCategories(ctx context.Context) ([]ItemCategory, error
 	return items, nil
 }
 
+const listItemCategoriesDesc = `-- name: ListItemCategoriesDesc :many
+SELECT id, name FROM item_categories ORDER BY name DESC
+`
+
+func (q *Queries) ListItemCategoriesDesc(ctx context.Context) ([]ItemCategory, error) {
+	rows, err := q.db.QueryContext(ctx, listItemCategoriesDesc)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ItemCategory
+	for rows.Next() {
+		var i ItemCategory
+		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listMealCategories = `-- name: ListMealCategories :many
 SELECT id, name FROM meal_categories ORDER BY name ASC
 `
 
 func (q *Queries) ListMealCategories(ctx context.Context) ([]MealCategory, error) {
 	rows, err := q.db.QueryContext(ctx, listMealCategories)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []MealCategory
+	for rows.Next() {
+		var i MealCategory
+		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listMealCategoriesDesc = `-- name: ListMealCategoriesDesc :many
+SELECT id, name FROM meal_categories ORDER BY name DESC
+`
+
+func (q *Queries) ListMealCategoriesDesc(ctx context.Context) ([]MealCategory, error) {
+	rows, err := q.db.QueryContext(ctx, listMealCategoriesDesc)
 	if err != nil {
 		return nil, err
 	}

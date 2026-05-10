@@ -23,11 +23,22 @@ type ItemResponse struct {
 	Name string `json:"name"`
 }
 
+// Pagination response envelope
+type PaginatedResponse struct {
+	Data   interface{} `json:"data"`
+	Total  int64       `json:"total"`
+	Limit  int32       `json:"limit"`
+	Offset int32       `json:"offset"`
+}
+
 // GET /items
 func getItems(repos *repository.Repositories) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		limit := int32(50) // default limit=50
-		offset := int32(0) // default offset=0
+		limit := int32(50)
+		offset := int32(0)
+		sortOrder := "ASC"
+		query := c.Query("q")
+		categoryID := c.Query("category_id")
 
 		if l := c.Query("limit"); l != "" {
 			if parsed, err := strconv.ParseInt(l, 10, 32); err == nil {
@@ -41,21 +52,72 @@ func getItems(repos *repository.Repositories) gin.HandlerFunc {
 			}
 		}
 
-		items, err := repos.Items.ListItems(c.Request.Context(), limit, offset)
-		if err != nil {
-			c.JSON(500, gin.H{"error": "Failed to fetch items"})
-			return
+		if so := c.Query("sort_order"); so != "" && (so == "ASC" || so == "DESC") {
+			sortOrder = so
 		}
 
-		response := make([]ItemResponse, len(items))
-		for i, item := range items {
-			response[i] = ItemResponse{
-				ID:   item.ID,
-				Name: item.Name,
+		var items []ItemResponse
+		var total int64
+
+		// Determine which query to use based on search and filter params
+		if query != "" {
+			// Search mode
+			searchItems, err := repos.Items.SearchItems(c.Request.Context(), query, limit, offset, sortOrder)
+			if err != nil {
+				c.JSON(500, gin.H{"error": "Failed to fetch items"})
+				return
 			}
+			items = make([]ItemResponse, len(searchItems))
+			for i, item := range searchItems {
+				items[i] = ItemResponse{
+					ID:   item.ID,
+					Name: item.Name,
+				}
+			}
+			total, _ = repos.Items.SearchItemsCount(c.Request.Context(), query)
+		} else if categoryID != "" {
+			// Category filter mode
+			catID, err := strconv.ParseInt(categoryID, 10, 32)
+			if err != nil {
+				c.JSON(400, gin.H{"error": "Invalid category ID"})
+				return
+			}
+			filterItems, err := repos.Items.ListItemsByCategory(c.Request.Context(), int32(catID), limit, offset, sortOrder)
+			if err != nil {
+				c.JSON(500, gin.H{"error": "Failed to fetch items"})
+				return
+			}
+			items = make([]ItemResponse, len(filterItems))
+			for i, item := range filterItems {
+				items[i] = ItemResponse{
+					ID:   item.ID,
+					Name: item.Name,
+				}
+			}
+			total, _ = repos.Items.ListItemsByCategoryCount(c.Request.Context(), int32(catID))
+		} else {
+			// List all items
+			listItems, err := repos.Items.ListItems(c.Request.Context(), limit, offset, sortOrder)
+			if err != nil {
+				c.JSON(500, gin.H{"error": "Failed to fetch items"})
+				return
+			}
+			items = make([]ItemResponse, len(listItems))
+			for i, item := range listItems {
+				items[i] = ItemResponse{
+					ID:   item.ID,
+					Name: item.Name,
+				}
+			}
+			total, _ = repos.Items.ListItemsCount(c.Request.Context())
 		}
 
-		c.JSON(200, response)
+		c.JSON(200, PaginatedResponse{
+			Data:   items,
+			Total:  total,
+			Limit:  limit,
+			Offset: offset,
+		})
 	}
 }
 

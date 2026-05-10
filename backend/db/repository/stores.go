@@ -23,8 +23,15 @@ func (r *StoreRepository) GetStoreByName(ctx context.Context, name string) (sqlc
 	return r.queries.GetStoreByName(ctx, name)
 }
 
-func (r *StoreRepository) ListStores(ctx context.Context) ([]sqlc.Store, error) {
-	return r.queries.ListStores(ctx)
+func (r *StoreRepository) ListStores(ctx context.Context, limit int32, offset int32, sortOrder string) ([]sqlc.Store, error) {
+	if sortOrder == "DESC" {
+		return r.queries.ListStoresDesc(ctx, sqlc.ListStoresDescParams{Limit: limit, Offset: offset})
+	}
+	return r.queries.ListStoresAsc(ctx, sqlc.ListStoresAscParams{Limit: limit, Offset: offset})
+}
+
+func (r *StoreRepository) ListStoresCount(ctx context.Context) (int64, error) {
+	return r.queries.ListStoresCount(ctx)
 }
 
 func (r *StoreRepository) CreateStore(ctx context.Context, name string) (sqlc.Store, error) {

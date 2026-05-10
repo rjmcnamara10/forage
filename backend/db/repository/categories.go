@@ -23,7 +23,10 @@ func (r *ItemCategoryRepository) GetItemCategoryByName(ctx context.Context, name
 	return r.queries.GetItemCategoryByName(ctx, name)
 }
 
-func (r *ItemCategoryRepository) ListItemCategories(ctx context.Context) ([]sqlc.ItemCategory, error) {
+func (r *ItemCategoryRepository) ListItemCategories(ctx context.Context, limit int32, offset int32, sortOrder string) ([]sqlc.ItemCategory, error) {
+	if sortOrder == "DESC" {
+		return r.queries.ListItemCategoriesDesc(ctx)
+	}
 	return r.queries.ListItemCategories(ctx)
 }
 
@@ -56,7 +59,10 @@ func (r *MealCategoryRepository) GetMealCategoryByName(ctx context.Context, name
 	return r.queries.GetMealCategoryByName(ctx, name)
 }
 
-func (r *MealCategoryRepository) ListMealCategories(ctx context.Context) ([]sqlc.MealCategory, error) {
+func (r *MealCategoryRepository) ListMealCategories(ctx context.Context, limit int32, offset int32, sortOrder string) ([]sqlc.MealCategory, error) {
+	if sortOrder == "DESC" {
+		return r.queries.ListMealCategoriesDesc(ctx)
+	}
 	return r.queries.ListMealCategories(ctx)
 }
 

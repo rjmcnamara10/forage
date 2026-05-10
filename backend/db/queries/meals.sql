@@ -28,8 +28,29 @@ SELECT COUNT(*) as count FROM meals WHERE meal_category_id = $1;
 -- name: SearchMeals :many
 SELECT id, name, meal_category_id, servings FROM meals WHERE name ILIKE $1 ORDER BY name ASC LIMIT $2 OFFSET $3;
 
+-- name: SearchMealsDesc :many
+SELECT id, name, meal_category_id, servings FROM meals WHERE name ILIKE $1 ORDER BY name DESC LIMIT $2 OFFSET $3;
+
 -- name: SearchMealsCount :one
 SELECT COUNT(*) as count FROM meals WHERE name ILIKE $1;
+
+-- name: ListMealsDesc :many
+SELECT id, name, meal_category_id, servings FROM meals ORDER BY name DESC LIMIT $1 OFFSET $2;
+
+-- name: ListMealsByServingsAsc :many
+SELECT id, name, meal_category_id, servings FROM meals ORDER BY servings ASC LIMIT $1 OFFSET $2;
+
+-- name: ListMealsByServingsDesc :many
+SELECT id, name, meal_category_id, servings FROM meals ORDER BY servings DESC LIMIT $1 OFFSET $2;
+
+-- name: ListMealsByCategoryDesc :many
+SELECT id, name, meal_category_id, servings FROM meals WHERE meal_category_id = $1 ORDER BY name DESC LIMIT $2 OFFSET $3;
+
+-- name: ListMealsByCategoryByServingsAsc :many
+SELECT id, name, meal_category_id, servings FROM meals WHERE meal_category_id = $1 ORDER BY servings ASC LIMIT $2 OFFSET $3;
+
+-- name: ListMealsByCategoryByServingsDesc :many
+SELECT id, name, meal_category_id, servings FROM meals WHERE meal_category_id = $1 ORDER BY servings DESC LIMIT $2 OFFSET $3;
 
 -- name: GetMealWithCategory :one
 SELECT m.id, m.name, m.meal_category_id, mc.name as category_name, m.servings 

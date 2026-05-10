@@ -78,6 +78,81 @@ func (q *Queries) ListStores(ctx context.Context) ([]Store, error) {
 	return items, nil
 }
 
+const listStoresAsc = `-- name: ListStoresAsc :many
+SELECT id, name FROM stores ORDER BY name ASC LIMIT $1 OFFSET $2
+`
+
+type ListStoresAscParams struct {
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
+
+func (q *Queries) ListStoresAsc(ctx context.Context, arg ListStoresAscParams) ([]Store, error) {
+	rows, err := q.db.QueryContext(ctx, listStoresAsc, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Store
+	for rows.Next() {
+		var i Store
+		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listStoresCount = `-- name: ListStoresCount :one
+SELECT COUNT(*) as count FROM stores
+`
+
+func (q *Queries) ListStoresCount(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, listStoresCount)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const listStoresDesc = `-- name: ListStoresDesc :many
+SELECT id, name FROM stores ORDER BY name DESC LIMIT $1 OFFSET $2
+`
+
+type ListStoresDescParams struct {
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
+
+func (q *Queries) ListStoresDesc(ctx context.Context, arg ListStoresDescParams) ([]Store, error) {
+	rows, err := q.db.QueryContext(ctx, listStoresDesc, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Store
+	for rows.Next() {
+		var i Store
+		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateStore = `-- name: UpdateStore :one
 UPDATE stores SET name = $1 WHERE id = $2 RETURNING id, name
 `

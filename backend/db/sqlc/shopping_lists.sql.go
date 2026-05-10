@@ -77,6 +77,42 @@ func (q *Queries) GetShoppingListsContainingStoreItem(ctx context.Context, arg G
 	return items, nil
 }
 
+const getShoppingListsContainingStoreItemAsc = `-- name: GetShoppingListsContainingStoreItemAsc :many
+SELECT DISTINCT sl.id, sl.name, sl.created_at FROM shopping_lists sl
+JOIN shopping_list_items sli ON sl.id = sli.shopping_list_id
+WHERE sli.store_item_id = $1
+ORDER BY sl.created_at ASC LIMIT $2 OFFSET $3
+`
+
+type GetShoppingListsContainingStoreItemAscParams struct {
+	StoreItemID sql.NullInt32 `json:"store_item_id"`
+	Limit       int32         `json:"limit"`
+	Offset      int32         `json:"offset"`
+}
+
+func (q *Queries) GetShoppingListsContainingStoreItemAsc(ctx context.Context, arg GetShoppingListsContainingStoreItemAscParams) ([]ShoppingList, error) {
+	rows, err := q.db.QueryContext(ctx, getShoppingListsContainingStoreItemAsc, arg.StoreItemID, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ShoppingList
+	for rows.Next() {
+		var i ShoppingList
+		if err := rows.Scan(&i.ID, &i.Name, &i.CreatedAt); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getShoppingListsContainingStoreItemCount = `-- name: GetShoppingListsContainingStoreItemCount :one
 SELECT COUNT(DISTINCT sl.id) as count FROM shopping_lists sl
 JOIN shopping_list_items sli ON sl.id = sli.shopping_list_id
@@ -101,6 +137,38 @@ type ListShoppingListsParams struct {
 
 func (q *Queries) ListShoppingLists(ctx context.Context, arg ListShoppingListsParams) ([]ShoppingList, error) {
 	rows, err := q.db.QueryContext(ctx, listShoppingLists, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ShoppingList
+	for rows.Next() {
+		var i ShoppingList
+		if err := rows.Scan(&i.ID, &i.Name, &i.CreatedAt); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listShoppingListsAsc = `-- name: ListShoppingListsAsc :many
+SELECT id, name, created_at FROM shopping_lists ORDER BY created_at ASC LIMIT $1 OFFSET $2
+`
+
+type ListShoppingListsAscParams struct {
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
+
+func (q *Queries) ListShoppingListsAsc(ctx context.Context, arg ListShoppingListsAscParams) ([]ShoppingList, error) {
+	rows, err := q.db.QueryContext(ctx, listShoppingListsAsc, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}

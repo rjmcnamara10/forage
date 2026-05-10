@@ -24,7 +24,10 @@ func (r *ItemRepository) GetItemByName(ctx context.Context, name string) (sqlc.I
 	return r.queries.GetItemByName(ctx, name)
 }
 
-func (r *ItemRepository) ListItems(ctx context.Context, limit int32, offset int32) ([]sqlc.Item, error) {
+func (r *ItemRepository) ListItems(ctx context.Context, limit int32, offset int32, sortOrder string) ([]sqlc.Item, error) {
+	if sortOrder == "DESC" {
+		return r.queries.ListItemsDesc(ctx, sqlc.ListItemsDescParams{Limit: limit, Offset: offset})
+	}
 	return r.queries.ListItems(ctx, sqlc.ListItemsParams{Limit: limit, Offset: offset})
 }
 
@@ -60,7 +63,10 @@ func (r *ItemRepository) RemoveAllItemCategories(ctx context.Context, itemID int
 	return r.queries.RemoveAllItemCategories(ctx, itemID)
 }
 
-func (r *ItemRepository) ListItemsByCategory(ctx context.Context, categoryID int32, limit int32, offset int32) ([]sqlc.Item, error) {
+func (r *ItemRepository) ListItemsByCategory(ctx context.Context, categoryID int32, limit int32, offset int32, sortOrder string) ([]sqlc.Item, error) {
+	if sortOrder == "DESC" {
+		return r.queries.ListItemsByCategoryDesc(ctx, sqlc.ListItemsByCategoryDescParams{CategoryID: categoryID, Limit: limit, Offset: offset})
+	}
 	return r.queries.ListItemsByCategory(ctx, sqlc.ListItemsByCategoryParams{CategoryID: categoryID, Limit: limit, Offset: offset})
 }
 
@@ -68,7 +74,10 @@ func (r *ItemRepository) ListItemsByCategoryCount(ctx context.Context, categoryI
 	return r.queries.ListItemsByCategoryCount(ctx, categoryID)
 }
 
-func (r *ItemRepository) SearchItems(ctx context.Context, pattern string, limit int32, offset int32) ([]sqlc.Item, error) {
+func (r *ItemRepository) SearchItems(ctx context.Context, pattern string, limit int32, offset int32, sortOrder string) ([]sqlc.Item, error) {
+	if sortOrder == "DESC" {
+		return r.queries.SearchItemsDesc(ctx, sqlc.SearchItemsDescParams{Name: "%" + pattern + "%", Limit: limit, Offset: offset})
+	}
 	return r.queries.SearchItems(ctx, sqlc.SearchItemsParams{Name: "%" + pattern + "%", Limit: limit, Offset: offset})
 }
 

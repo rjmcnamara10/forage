@@ -23,7 +23,10 @@ func (r *UnitRepository) GetUnitByName(ctx context.Context, name string) (sqlc.U
 	return r.queries.GetUnitByName(ctx, name)
 }
 
-func (r *UnitRepository) ListUnits(ctx context.Context) ([]sqlc.Unit, error) {
+func (r *UnitRepository) ListUnits(ctx context.Context, limit int32, offset int32, sortOrder string) ([]sqlc.Unit, error) {
+	if sortOrder == "DESC" {
+		return r.queries.ListUnitsDesc(ctx)
+	}
 	return r.queries.ListUnits(ctx)
 }
 

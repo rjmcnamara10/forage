@@ -28,6 +28,7 @@ func getShoppingLists(repos *repository.Repositories) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		limit := int32(50)
 		offset := int32(0)
+		sortOrder := "DESC" // Default: most recent first
 
 		if l := c.Query("limit"); l != "" {
 			if parsed, err := strconv.ParseInt(l, 10, 32); err == nil {
@@ -41,7 +42,11 @@ func getShoppingLists(repos *repository.Repositories) gin.HandlerFunc {
 			}
 		}
 
-		shoppingLists, err := repos.ShoppingLists.ListShoppingLists(c.Request.Context(), limit, offset)
+		if so := c.Query("sort_order"); so != "" && (so == "ASC" || so == "DESC") {
+			sortOrder = so
+		}
+
+		shoppingLists, err := repos.ShoppingLists.ListShoppingLists(c.Request.Context(), limit, offset, sortOrder)
 		if err != nil {
 			c.JSON(500, gin.H{"error": "Failed to fetch shopping lists"})
 			return
@@ -56,7 +61,14 @@ func getShoppingLists(repos *repository.Repositories) gin.HandlerFunc {
 			}
 		}
 
-		c.JSON(200, response)
+		total, _ := repos.ShoppingLists.ListShoppingListsCount(c.Request.Context())
+
+		c.JSON(200, PaginatedResponse{
+			Data:   response,
+			Total:  total,
+			Limit:  limit,
+			Offset: offset,
+		})
 	}
 }
 

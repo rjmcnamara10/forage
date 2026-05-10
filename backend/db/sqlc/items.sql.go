@@ -176,6 +176,42 @@ func (q *Queries) ListItemsByCategoryCount(ctx context.Context, categoryID int32
 	return count, err
 }
 
+const listItemsByCategoryDesc = `-- name: ListItemsByCategoryDesc :many
+SELECT DISTINCT i.id, i.name FROM items i
+JOIN item_category_mappings icm ON i.id = icm.item_id
+WHERE icm.category_id = $1
+ORDER BY i.name DESC LIMIT $2 OFFSET $3
+`
+
+type ListItemsByCategoryDescParams struct {
+	CategoryID int32 `json:"category_id"`
+	Limit      int32 `json:"limit"`
+	Offset     int32 `json:"offset"`
+}
+
+func (q *Queries) ListItemsByCategoryDesc(ctx context.Context, arg ListItemsByCategoryDescParams) ([]Item, error) {
+	rows, err := q.db.QueryContext(ctx, listItemsByCategoryDesc, arg.CategoryID, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Item
+	for rows.Next() {
+		var i Item
+		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listItemsCount = `-- name: ListItemsCount :one
 SELECT COUNT(*) as count FROM items
 `
@@ -185,6 +221,38 @@ func (q *Queries) ListItemsCount(ctx context.Context) (int64, error) {
 	var count int64
 	err := row.Scan(&count)
 	return count, err
+}
+
+const listItemsDesc = `-- name: ListItemsDesc :many
+SELECT id, name FROM items ORDER BY name DESC LIMIT $1 OFFSET $2
+`
+
+type ListItemsDescParams struct {
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
+
+func (q *Queries) ListItemsDesc(ctx context.Context, arg ListItemsDescParams) ([]Item, error) {
+	rows, err := q.db.QueryContext(ctx, listItemsDesc, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Item
+	for rows.Next() {
+		var i Item
+		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const removeAllItemCategories = `-- name: RemoveAllItemCategories :exec
@@ -252,6 +320,39 @@ func (q *Queries) SearchItemsCount(ctx context.Context, name string) (int64, err
 	var count int64
 	err := row.Scan(&count)
 	return count, err
+}
+
+const searchItemsDesc = `-- name: SearchItemsDesc :many
+SELECT id, name FROM items WHERE name ILIKE $1 ORDER BY name DESC LIMIT $2 OFFSET $3
+`
+
+type SearchItemsDescParams struct {
+	Name   string `json:"name"`
+	Limit  int32  `json:"limit"`
+	Offset int32  `json:"offset"`
+}
+
+func (q *Queries) SearchItemsDesc(ctx context.Context, arg SearchItemsDescParams) ([]Item, error) {
+	rows, err := q.db.QueryContext(ctx, searchItemsDesc, arg.Name, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Item
+	for rows.Next() {
+		var i Item
+		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const updateItem = `-- name: UpdateItem :one

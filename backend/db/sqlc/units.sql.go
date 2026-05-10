@@ -78,6 +78,33 @@ func (q *Queries) ListUnits(ctx context.Context) ([]Unit, error) {
 	return items, nil
 }
 
+const listUnitsDesc = `-- name: ListUnitsDesc :many
+SELECT id, name FROM units ORDER BY name DESC
+`
+
+func (q *Queries) ListUnitsDesc(ctx context.Context) ([]Unit, error) {
+	rows, err := q.db.QueryContext(ctx, listUnitsDesc)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Unit
+	for rows.Next() {
+		var i Unit
+		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateUnit = `-- name: UpdateUnit :one
 UPDATE units SET name = $1 WHERE id = $2 RETURNING id, name
 `

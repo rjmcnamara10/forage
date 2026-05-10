@@ -24,7 +24,18 @@ func (r *MealRepository) GetMealByName(ctx context.Context, name string) (sqlc.M
 	return r.queries.GetMealByName(ctx, name)
 }
 
-func (r *MealRepository) ListMeals(ctx context.Context, limit int32, offset int32) ([]sqlc.Meal, error) {
+func (r *MealRepository) ListMeals(ctx context.Context, limit int32, offset int32, sortBy string, sortOrder string) ([]sqlc.Meal, error) {
+	// Default sort by name
+	if sortBy == "servings" {
+		if sortOrder == "DESC" {
+			return r.queries.ListMealsByServingsDesc(ctx, sqlc.ListMealsByServingsDescParams{Limit: limit, Offset: offset})
+		}
+		return r.queries.ListMealsByServingsAsc(ctx, sqlc.ListMealsByServingsAscParams{Limit: limit, Offset: offset})
+	}
+	// Sort by name (default)
+	if sortOrder == "DESC" {
+		return r.queries.ListMealsDesc(ctx, sqlc.ListMealsDescParams{Limit: limit, Offset: offset})
+	}
 	return r.queries.ListMeals(ctx, sqlc.ListMealsParams{Limit: limit, Offset: offset})
 }
 
@@ -44,7 +55,18 @@ func (r *MealRepository) DeleteMeal(ctx context.Context, id int32) error {
 	return r.queries.DeleteMeal(ctx, id)
 }
 
-func (r *MealRepository) ListMealsByCategory(ctx context.Context, categoryID int32, limit int32, offset int32) ([]sqlc.Meal, error) {
+func (r *MealRepository) ListMealsByCategory(ctx context.Context, categoryID int32, limit int32, offset int32, sortBy string, sortOrder string) ([]sqlc.Meal, error) {
+	// Default sort by name
+	if sortBy == "servings" {
+		if sortOrder == "DESC" {
+			return r.queries.ListMealsByCategoryByServingsDesc(ctx, sqlc.ListMealsByCategoryByServingsDescParams{MealCategoryID: categoryID, Limit: limit, Offset: offset})
+		}
+		return r.queries.ListMealsByCategoryByServingsAsc(ctx, sqlc.ListMealsByCategoryByServingsAscParams{MealCategoryID: categoryID, Limit: limit, Offset: offset})
+	}
+	// Sort by name (default)
+	if sortOrder == "DESC" {
+		return r.queries.ListMealsByCategoryDesc(ctx, sqlc.ListMealsByCategoryDescParams{MealCategoryID: categoryID, Limit: limit, Offset: offset})
+	}
 	return r.queries.ListMealsByCategory(ctx, sqlc.ListMealsByCategoryParams{MealCategoryID: categoryID, Limit: limit, Offset: offset})
 }
 
@@ -52,7 +74,10 @@ func (r *MealRepository) ListMealsByCategoryCount(ctx context.Context, categoryI
 	return r.queries.ListMealsByCategoryCount(ctx, categoryID)
 }
 
-func (r *MealRepository) SearchMeals(ctx context.Context, pattern string, limit int32, offset int32) ([]sqlc.Meal, error) {
+func (r *MealRepository) SearchMeals(ctx context.Context, pattern string, limit int32, offset int32, sortOrder string) ([]sqlc.Meal, error) {
+	if sortOrder == "DESC" {
+		return r.queries.SearchMealsDesc(ctx, sqlc.SearchMealsDescParams{Name: "%" + pattern + "%", Limit: limit, Offset: offset})
+	}
 	return r.queries.SearchMeals(ctx, sqlc.SearchMealsParams{Name: "%" + pattern + "%", Limit: limit, Offset: offset})
 }
 
